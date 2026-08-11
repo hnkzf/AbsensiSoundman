@@ -33,8 +33,19 @@
   <label for="nama">Nama</label>
   <input type="text" id="nama" placeholder="Masukkan nama...">
 
-  <label for="acara">Ibadah/Komunitas</label>
-  <input type="text" id="acara" placeholder="Contoh: Rapat Mingguan">
+  <label for="acara">Pilih Ibadah</label>
+  <select id="acara">
+    <option value="" disabled selected>-- Pilih Jenis Ibadah --</option>
+    <option value="Ibadah Raya">Ibadah Raya</option>
+    <option value="Komsel">Komsel</option>
+    <option value="Zoom Rumah Doa">Zoom Rumah Doa</option>
+    <option value="Menara Doa">Menara Doa</option>
+    <option value="WBI">WBI</option>
+    <option value="SBT">SBT</option>
+    <option value="Youth">Youth</option>
+    <option value="Profetik">Profetik</option>
+    <option value="Lansia">Lansia</option>
+  </select>
 
   <!-- Area Kamera & Preview -->
   <div class="camera-box">
@@ -110,7 +121,7 @@
     const acara = document.getElementById('acara').value.trim();
 
     if (!nama || !acara) {
-      showStatus("Nama dan Acara wajib diisi!", "error");
+      showStatus("Nama dan Ibadah wajib diisi!", "error");
       return;
     }
 
