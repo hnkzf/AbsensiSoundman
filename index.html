@@ -816,28 +816,74 @@ function ambilUlang() {
 
 
 // ==================================================
-// KIRIM ABSENSI
+// KIRIM ABSENSI (VERSI PERBAIKAN REVISI)
 // ==================================================
 
-function kirimAbsensi() {
+async function kirimAbsensi() {
 
+  const nama = document.getElementById('nama').value.trim();
+  const acara = document.getElementById('acara').value.trim();
 
-  const nama =
-    document
-      .getElementById(
-        'nama'
-      )
-      .value
-      .trim();
+  // VALIDASI
+  if (!nama) {
+    tampilkanStatus('Silakan masukkan nama.', 'error');
+    return;
+  }
 
+  if (!acara) {
+    tampilkanStatus('Silakan masukkan nama acara.', 'error');
+    return;
+  }
 
-  const acara =
-    document
-      .getElementById(
-        'acara'
-      )
-      .value
-      .trim();
+  if (!fotoBase64) {
+    tampilkanStatus('Silakan ambil foto terlebih dahulu.', 'error');
+    return;
+  }
+
+  const tombol = document.getElementById('btnKirim');
+  tombol.disabled = true;
+  tombol.textContent = 'Mengirim...';
+
+  tampilkanStatus('Sedang menyimpan absensi ke server...', 'loading');
+
+  try {
+    // Gunakan URLSearchParams untuk encoding data raksasa (Base64) dengan aman
+    const bodyData = new URLSearchParams();
+    bodyData.append('nama', nama);
+    bodyData.append('acara', acara);
+    bodyData.append('foto', fotoBase64);
+
+    // Kirim menggunakan fetch API
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: bodyData.toString(),
+    });
+
+    // Google Apps Script meredirect response JSON, kita ubah ke json
+    const hasil = await response.json();
+
+    if (hasil.success) {
+      tampilkanStatus('✅ ' + hasil.message, 'success');
+      tombol.textContent = 'Absensi Terkirim';
+      
+      // Matikan kamera & bersihkan tombol
+      matikanKamera();
+      document.getElementById('btnUlang').classList.add('hidden');
+    } else {
+      // Menampilkan error asli dari Google Apps Script jika ada
+      throw new Error(hasil.message || 'Gagal menyimpan absensi.');
+    }
+
+  } catch (error) {
+    console.error('Error pengiriman:', error);
+    tampilkanStatus('❌ Terjadi Kesalahan: ' + error.message, 'error');
+    tombol.disabled = false;
+    tombol.textContent = '✅ Kirim Absensi';
+  }
+}
 
 
   // ==========================================
