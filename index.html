@@ -472,7 +472,7 @@
 // ==================================================
 
 const API_URL =
-  'https://script.google.com/macros/s/AKfycbw8oQwoiApGDViJV1Q7_-d_-EuC9HUIBvRiV6BWUacmLqPfpwCnVyMn1L2XY0evpkFgDg/exec';
+  'MASUKKAN_URL_APPS_SCRIPT';
 
 
 // ==================================================
@@ -485,58 +485,139 @@ let fotoBase64 = null;
 
 
 // ==================================================
-// AKTIFKAN KAMERA (VERSI FIX PERMISSIONS & RESOLUSI)
+// AKTIFKAN KAMERA
 // ==================================================
 
 async function aktifkanKamera() {
-  const statusElement = document.getElementById('status');
 
-  // 1. Cek Dukungan Browser & HTTPS
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    tampilkanStatus('Akses kamera diblokir atau browser tidak mendukung (Pastikan menggunakan HTTPS).', 'error');
+
+  // Pastikan browser mendukung kamera
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    tampilkanStatus(
+
+      'Browser tidak mendukung akses kamera.',
+
+      'error'
+
+    );
+
     return;
+
   }
+
 
   try {
-    tampilkanStatus('Meminta izin akses kamera...', 'loading');
 
-    // 2. Minta Stream Kamera (Gunakan konfigurasi sederhana agar tidak error di HP)
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: 'user', // Menggunakan kamera depan
-        width: { max: 1280 },
-        height: { max: 720 }
-      },
-      audio: false
-    });
 
-    const video = document.getElementById('video');
-    video.srcObject = stream;
+    stream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
 
-    // Tunggu sampai video siap diputar
-    video.onloadedmetadata = () => {
-      video.play();
-      document.getElementById('btnFoto').disabled = false;
-      tampilkanStatus('Kamera aktif. Posisikan wajah di dalam frame.', 'success');
-    };
+          video: {
 
-  } catch (error) {
-    console.error('Detail Error Kamera:', error);
+            facingMode: {
+              ideal: 'user'
+            },
 
-    let pesan = 'Tidak dapat mengakses kamera.';
+            width: {
+              ideal: 1280
+            },
 
-    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-      pesan = '🚫 Izin kamera ditolak. Silakan klik ikon gembok di URL browser lalu izinkan Kamera, kemudian refresh halaman.';
-    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-      pesan = '📷 Perangkat kamera tidak ditemukan di HP/Komputer Anda.';
-    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-      pesan = '⚠️ Kamera sedang digunakan oleh aplikasi lain (seperti WhatsApp/Zoom). Tutup aplikasi tersebut terlebih dahulu.';
-    } else if (error.name === 'OverconstrainedError') {
-      pesan = '⚙️ Kamera tidak mendukung resolusi yang diminta.';
+            height: {
+              ideal: 720
+            }
+
+          },
+
+          audio: false
+
+        });
+
+
+    const video =
+      document.getElementById(
+        'video'
+      );
+
+
+    video.srcObject =
+      stream;
+
+
+    document.getElementById(
+      'btnFoto'
+    ).disabled = false;
+
+
+    tampilkanStatus(
+
+      'Kamera aktif. Posisikan wajah di kamera.',
+
+      'success'
+
+    );
+
+
+  }
+
+  catch (error) {
+
+
+    console.error(
+      error
+    );
+
+
+    let pesan =
+      'Tidak dapat mengakses kamera.';
+
+
+    if (
+      error.name ===
+      'NotAllowedError'
+    ) {
+
+      pesan =
+        'Izin kamera ditolak. Silakan izinkan kamera pada browser.';
+
     }
 
-    tampilkanStatus(pesan, 'error');
+
+    if (
+      error.name ===
+      'NotFoundError'
+    ) {
+
+      pesan =
+        'Kamera tidak ditemukan.';
+
+    }
+
+
+    if (
+      error.name ===
+      'NotReadableError'
+    ) {
+
+      pesan =
+        'Kamera sedang digunakan aplikasi lain.';
+
+    }
+
+
+    tampilkanStatus(
+      pesan,
+      'error'
+    );
+
   }
+
 }
 
 
@@ -735,74 +816,28 @@ function ambilUlang() {
 
 
 // ==================================================
-// KIRIM ABSENSI (VERSI PERBAIKAN REVISI)
+// KIRIM ABSENSI
 // ==================================================
 
-async function kirimAbsensi() {
+function kirimAbsensi() {
 
-  const nama = document.getElementById('nama').value.trim();
-  const acara = document.getElementById('acara').value.trim();
 
-  // VALIDASI
-  if (!nama) {
-    tampilkanStatus('Silakan masukkan nama.', 'error');
-    return;
-  }
+  const nama =
+    document
+      .getElementById(
+        'nama'
+      )
+      .value
+      .trim();
 
-  if (!acara) {
-    tampilkanStatus('Silakan masukkan nama acara.', 'error');
-    return;
-  }
 
-  if (!fotoBase64) {
-    tampilkanStatus('Silakan ambil foto terlebih dahulu.', 'error');
-    return;
-  }
-
-  const tombol = document.getElementById('btnKirim');
-  tombol.disabled = true;
-  tombol.textContent = 'Mengirim...';
-
-  tampilkanStatus('Sedang menyimpan absensi ke server...', 'loading');
-
-  try {
-    // Gunakan URLSearchParams untuk encoding data raksasa (Base64) dengan aman
-    const bodyData = new URLSearchParams();
-    bodyData.append('nama', nama);
-    bodyData.append('acara', acara);
-    bodyData.append('foto', fotoBase64);
-
-    // Kirim menggunakan fetch API
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: bodyData.toString(),
-    });
-
-    // Google Apps Script meredirect response JSON, kita ubah ke json
-    const hasil = await response.json();
-
-    if (hasil.success) {
-      tampilkanStatus('✅ ' + hasil.message, 'success');
-      tombol.textContent = 'Absensi Terkirim';
-      
-      // Matikan kamera & bersihkan tombol
-      matikanKamera();
-      document.getElementById('btnUlang').classList.add('hidden');
-    } else {
-      // Menampilkan error asli dari Google Apps Script jika ada
-      throw new Error(hasil.message || 'Gagal menyimpan absensi.');
-    }
-
-  } catch (error) {
-    console.error('Error pengiriman:', error);
-    tampilkanStatus('❌ Terjadi Kesalahan: ' + error.message, 'error');
-    tombol.disabled = false;
-    tombol.textContent = '✅ Kirim Absensi';
-  }
-}
+  const acara =
+    document
+      .getElementById(
+        'acara'
+      )
+      .value
+      .trim();
 
 
   // ==========================================
