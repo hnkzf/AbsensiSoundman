@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Absensi</title>
+
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    body {
+
+      margin: 0;
+
+      padding: 20px;
+
+      min-height: 100vh;
+
+      display: flex;
+
+      justify-content: center;
+
+      align-items: center;
+
+      font-family:
+        Arial,
+        sans-serif;
+
+      background:
+        #f2f2f2;
+
+    }
+
+
+    .container {
+
+      width: 100%;
+
+      max-width: 420px;
+
+      background:
+        white;
+
+      padding: 25px;
+
+      border-radius: 20px;
+
+      box-shadow:
+        0 5px 20px
+        rgba(0,0,0,0.10);
+
+    }
+
+
+    h1 {
+
+      text-align: center;
+
+      margin-top: 0;
+
+      margin-bottom: 25px;
+
+    }
+
+
+    label {
+
+      display: block;
+
+      font-weight: bold;
+
+      margin-bottom: 7px;
+
+    }
+
+
+    input {
+
+      width: 100%;
+
+      padding: 13px;
+
+      border:
+        1px solid #ccc;
+
+      border-radius: 10px;
+
+      font-size: 16px;
+
+      margin-bottom: 15px;
+
+    }
+
+
+    video {
+
+      width: 100%;
+
+      display: block;
+
+      background: black;
+
+      border-radius: 15px;
+
+      transform:
+        scaleX(-1);
+
+    }
+
+
+    canvas {
+
+      display: none;
+
+    }
+
+
+    #preview {
+
+      width: 100%;
+
+      display: none;
+
+      border-radius: 15px;
+
+      margin-top: 15px;
+
+    }
+
+
+    button {
+
+      width: 100%;
+
+      border: none;
+
+      border-radius: 10px;
+
+      padding: 14px;
+
+      margin-top: 12px;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+    }
+
+
+    #btnCamera {
+
+      background:
+        #333;
+
+      color:
+        white;
+
+    }
+
+
+    #btnFoto {
+
+      background:
+        #2563eb;
+
+      color:
+        white;
+
+    }
+
+
+    #btnKirim {
+
+      background:
+        #16a34a;
+
+      color:
+        white;
+
+    }
+
+
+    #btnUlang {
+
+      background:
+        #666;
+
+      color:
+        white;
+
+    }
+
+
+    button:disabled {
+
+      opacity:
+        0.5;
+
+      cursor:
+        not-allowed;
+
+    }
+
+
+    #status {
+
+      display: none;
+
+      margin-top: 15px;
+
+      padding: 12px;
+
+      border-radius: 10px;
+
+      text-align: center;
+
+      line-height: 1.5;
+
+    }
+
+
+    .success {
+
+      background:
+        #dcfce7;
+
+      color:
+        #166534;
+
+    }
+
+
+    .error {
+
+      background:
+        #fee2e2;
+
+      color:
+        #991b1b;
+
+    }
+
+
+    .loading {
+
+      background:
+        #fef3c7;
+
+      color:
+        #92400e;
+
+    }
+
+
+    .hidden {
+
+      display: none !important;
+
+    }
+
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+  <h1>
+
+    Absensi
+
+  </h1>
+
+
+  <!-- ========================= -->
+  <!-- NAMA -->
+  <!-- ========================= -->
+
+  <label for="nama">
+
+    Nama
+
+  </label>
+
+
+  <input
+
+    id="nama"
+
+    type="text"
+
+    placeholder="Masukkan nama"
+
+    autocomplete="name"
+
+  >
+
+
+  <!-- ========================= -->
+  <!-- ACARA -->
+  <!-- ========================= -->
+
+  <label for="acara">
+
+    Acara
+
+  </label>
+
+
+  <input
+
+    id="acara"
+
+    type="text"
+
+    placeholder="Masukkan nama acara"
+
+    autocomplete="off"
+
+  >
+
+
+  <!-- ========================= -->
+  <!-- VIDEO CAMERA -->
+  <!-- ========================= -->
+
+  <video
+
+    id="video"
+
+    autoplay
+
+    playsinline
+
+  ></video>
+
+
+  <canvas
+
+    id="canvas"
+
+  ></canvas>
+
+
+  <!-- ========================= -->
+  <!-- BUTTON CAMERA -->
+  <!-- ========================= -->
+
+  <button
+
+    id="btnCamera"
+
+    onclick="aktifkanKamera()"
+
+  >
+
+    📷 Aktifkan Kamera
+
+  </button>
+
+
+  <!-- ========================= -->
+  <!-- BUTTON FOTO -->
+  <!-- ========================= -->
+
+  <button
+
+    id="btnFoto"
+
+    onclick="ambilFoto()"
+
+    disabled
+
+  >
+
+    📸 Ambil Foto
+
+  </button>
+
+
+  <!-- ========================= -->
+  <!-- PREVIEW -->
+  <!-- ========================= -->
+
+  <img
+
+    id="preview"
+
+    alt="Preview foto"
+
+  >
+
+
+  <!-- ========================= -->
+  <!-- RETAKE -->
+  <!-- ========================= -->
+
+  <button
+
+    id="btnUlang"
+
+    onclick="ambilUlang()"
+
+    class="hidden"
+
+  >
+
+    🔄 Ambil Ulang
+
+  </button>
+
+
+  <!-- ========================= -->
+  <!-- KIRIM -->
+  <!-- ========================= -->
+
+  <button
+
+    id="btnKirim"
+
+    onclick="kirimAbsensi()"
+
+    disabled
+
+  >
+
+    ✅ Kirim Absensi
+
+  </button>
+
+
+  <!-- ========================= -->
+  <!-- STATUS -->
+  <!-- ========================= -->
+
+  <div
+
+    id="status"
+
+  ></div>
+
+
+</div>
+
+
+
+<script>
+
+
+// ==================================================
+// MASUKKAN URL WEB APP APPS SCRIPT DI SINI
+// ==================================================
+
+const API_URL =
+  'https://script.google.com/macros/s/AKfycbxgxoUz7at1cZerjZOUJV18zFNe6X-cTmm3QEWMFcacJUErCcoNElT5ECPZEXs6eH2jYg/exec';
+
+
+// ==================================================
+// VARIABLE
+// ==================================================
+
+let stream = null;
+
+let fotoBase64 = null;
+
+
+// ==================================================
+// AKTIFKAN KAMERA
+// ==================================================
+
+async function aktifkanKamera() {
+
+
+  // Pastikan browser mendukung kamera
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    tampilkanStatus(
+
+      'Browser tidak mendukung akses kamera.',
+
+      'error'
+
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+
+    stream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
+
+          video: {
+
+            facingMode: {
+              ideal: 'user'
+            },
+
+            width: {
+              ideal: 1280
+            },
+
+            height: {
+              ideal: 720
+            }
+
+          },
+
+          audio: false
+
+        });
+
+
+    const video =
+      document.getElementById(
+        'video'
+      );
+
+
+    video.srcObject =
+      stream;
+
+
+    document.getElementById(
+      'btnFoto'
+    ).disabled = false;
+
+
+    tampilkanStatus(
+
+      'Kamera aktif. Posisikan wajah di kamera.',
+
+      'success'
+
+    );
+
+
+  }
+
+  catch (error) {
+
+
+    console.error(
+      error
+    );
+
+
+    let pesan =
+      'Tidak dapat mengakses kamera.';
+
+
+    if (
+      error.name ===
+      'NotAllowedError'
+    ) {
+
+      pesan =
+        'Izin kamera ditolak. Silakan izinkan kamera pada browser.';
+
+    }
+
+
+    if (
+      error.name ===
+      'NotFoundError'
+    ) {
+
+      pesan =
+        'Kamera tidak ditemukan.';
+
+    }
+
+
+    if (
+      error.name ===
+      'NotReadableError'
+    ) {
+
+      pesan =
+        'Kamera sedang digunakan aplikasi lain.';
+
+    }
+
+
+    tampilkanStatus(
+      pesan,
+      'error'
+    );
+
+  }
+
+}
+
+
+// ==================================================
+// AMBIL FOTO
+// ==================================================
+
+function ambilFoto() {
+
+
+  const video =
+    document.getElementById(
+      'video'
+    );
+
+
+  const canvas =
+    document.getElementById(
+      'canvas'
+    );
+
+
+  if (
+    video.videoWidth === 0
+  ) {
+
+    tampilkanStatus(
+
+      'Kamera belum siap.',
+
+      'error'
+
+    );
+
+    return;
+
+  }
+
+
+  canvas.width =
+    video.videoWidth;
+
+
+  canvas.height =
+    video.videoHeight;
+
+
+  const context =
+    canvas.getContext(
+      '2d'
+    );
+
+
+  // ==========================================
+  // Balik gambar agar hasil foto normal
+  // ==========================================
+
+  context.save();
+
+
+  context.translate(
+    canvas.width,
+    0
+  );
+
+
+  context.scale(
+    -1,
+    1
+  );
+
+
+  context.drawImage(
+
+    video,
+
+    0,
+    0,
+
+    canvas.width,
+    canvas.height
+
+  );
+
+
+  context.restore();
+
+
+  // ==========================================
+  // Convert menjadi JPG
+  // ==========================================
+
+  fotoBase64 =
+    canvas.toDataURL(
+
+      'image/jpeg',
+
+      0.80
+
+    );
+
+
+  // ==========================================
+  // Preview
+  // ==========================================
+
+  const preview =
+    document.getElementById(
+      'preview'
+    );
+
+
+  preview.src =
+    fotoBase64;
+
+
+  preview.style.display =
+    'block';
+
+
+  // ==========================================
+  // Tombol
+  // ==========================================
+
+  document.getElementById(
+    'btnUlang'
+  ).classList.remove(
+    'hidden'
+  );
+
+
+  document.getElementById(
+    'btnKirim'
+  ).disabled =
+    false;
+
+
+  tampilkanStatus(
+
+    'Foto berhasil diambil. Periksa foto sebelum mengirim.',
+
+    'success'
+
+  );
+
+}
+
+
+// ==================================================
+// AMBIL ULANG
+// ==================================================
+
+function ambilUlang() {
+
+
+  fotoBase64 =
+    null;
+
+
+  const preview =
+    document.getElementById(
+      'preview'
+    );
+
+
+  preview.src =
+    '';
+
+
+  preview.style.display =
+    'none';
+
+
+  document.getElementById(
+    'btnKirim'
+  ).disabled =
+    true;
+
+
+  document.getElementById(
+    'btnUlang'
+  ).classList.add(
+    'hidden'
+  );
+
+
+  tampilkanStatus(
+
+    'Silakan ambil foto kembali.',
+
+    'loading'
+
+  );
+
+}
+
+
+// ==================================================
+// KIRIM ABSENSI
+// ==================================================
+
+function kirimAbsensi() {
+
+
+  const nama =
+    document
+      .getElementById(
+        'nama'
+      )
+      .value
+      .trim();
+
+
+  const acara =
+    document
+      .getElementById(
+        'acara'
+      )
+      .value
+      .trim();
+
+
+  // ==========================================
+  // VALIDASI NAMA
+  // ==========================================
+
+  if (!nama) {
+
+    tampilkanStatus(
+
+      'Silakan masukkan nama.',
+
+      'error'
+
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================
+  // VALIDASI ACARA
+  // ==========================================
+
+  if (!acara) {
+
+    tampilkanStatus(
+
+      'Silakan masukkan nama acara.',
+
+      'error'
+
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================
+  // VALIDASI FOTO
+  // ==========================================
+
+  if (!fotoBase64) {
+
+    tampilkanStatus(
+
+      'Silakan ambil foto terlebih dahulu.',
+
+      'error'
+
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================
+  // VALIDASI URL API
+  // ==========================================
+
+  if (
+    API_URL ===
+    'MASUKKAN_URL_APPS_SCRIPT'
+  ) {
+
+    tampilkanStatus(
+
+      'URL Apps Script belum dimasukkan ke index.html.',
+
+      'error'
+
+    );
+
+    return;
+
+  }
+
+
+  // ==========================================
+  // DISABLE BUTTON
+  // ==========================================
+
+  const tombol =
+    document.getElementById(
+      'btnKirim'
+    );
+
+
+  tombol.disabled =
+    true;
+
+
+  tombol.textContent =
+    'Mengirim...';
+
+
+  tampilkanStatus(
+
+    'Sedang menyimpan absensi...',
+
+    'loading'
+
+  );
+
+
+  // ==========================================
+  // BUAT FORM
+  // ==========================================
+  //
+  // Kita menggunakan form POST biasa,
+  // bukan fetch().
+  //
+  // Ini menghindari masalah CORS pada
+  // Google Apps Script.
+  //
+  // ==========================================
+
+  const form =
+    document.createElement(
+      'form'
+    );
+
+
+  form.method =
+    'POST';
+
+
+  form.action =
+    API_URL;
+
+
+  form.target =
+    'responseFrame';
+
+
+  form.style.display =
+    'none';
+
+
+  // ==========================================
+  // FIELD NAMA
+  // ==========================================
+
+  const inputNama =
+    document.createElement(
+      'input'
+    );
+
+
+  inputNama.name =
+    'nama';
+
+
+  inputNama.value =
+    nama;
+
+
+  form.appendChild(
+    inputNama
+  );
+
+
+  // ==========================================
+  // FIELD ACARA
+  // ==========================================
+
+  const inputAcara =
+    document.createElement(
+      'input'
+    );
+
+
+  inputAcara.name =
+    'acara';
+
+
+  inputAcara.value =
+    acara;
+
+
+  form.appendChild(
+    inputAcara
+  );
+
+
+  // ==========================================
+  // FIELD FOTO
+  // ==========================================
+
+  const inputFoto =
+    document.createElement(
+      'input'
+    );
+
+
+  inputFoto.name =
+    'foto';
+
+
+  inputFoto.value =
+    fotoBase64;
+
+
+  form.appendChild(
+    inputFoto
+  );
+
+
+  // ==========================================
+  // TAMBAHKAN FORM KE BODY
+  // ==========================================
+
+  document.body.appendChild(
+    form
+  );
+
+
+  // ==========================================
+  // SUBMIT
+  // ==========================================
+
+  form.submit();
+
+
+  // ==========================================
+  // Tampilkan sukses setelah request
+  // dikirim.
+  //
+  // Karena form POST cross-origin tidak
+  // memberikan response langsung ke JS,
+  // kita menunggu sebentar.
+  // ==========================================
+
+  setTimeout(
+
+    function() {
+
+
+      tampilkanStatus(
+
+        '✅ Absensi berhasil dikirim!',
+
+        'success'
+
+      );
+
+
+      tombol.textContent =
+        'Absensi Terkirim';
+
+
+      // Matikan kamera
+
+      matikanKamera();
+
+
+      // Bersihkan form
+
+      form.remove();
+
+
+    },
+
+    2500
+
+  );
+
+}
+
+
+// ==================================================
+// MATIKAN KAMERA
+// ==================================================
+
+function matikanKamera() {
+
+
+  if (stream) {
+
+    stream
+      .getTracks()
+      .forEach(
+        function(track) {
+
+          track.stop();
+
+        }
+      );
+
+
+    stream =
+      null;
+
+  }
+
+}
+
+
+// ==================================================
+// STATUS
+// ==================================================
+
+function tampilkanStatus(
+  pesan,
+  tipe
+) {
+
+
+  const status =
+    document.getElementById(
+      'status'
+    );
+
+
+  status.textContent =
+    pesan;
+
+
+  status.className =
+    tipe;
+
+
+  status.style.display =
+    'block';
+
+}
+
+
+</script>
+
+
+<!-- ==================================================
+     IFRAME UNTUK MENAMPUNG RESPONSE POST
+     ================================================== -->
+
+<iframe
+
+  name="responseFrame"
+
+  id="responseFrame"
+
+  style="display:none"
+
+></iframe>
+
+
+</body>
+
+</html>
