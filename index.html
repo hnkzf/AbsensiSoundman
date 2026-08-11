@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Absensi</title>
+  <title>Form Absensi Ibadah</title>
   <style>
     * { box-sizing: border-box; font-family: sans-serif; }
     body { background: #f4f6f9; padding: 20px; margin: 0; display: flex; justify-content: center; }
@@ -40,12 +40,12 @@
 <div class="card">
   <h2>Absensi Ibadah</h2>
 
-  <label for="nama">Nama Lengkap</label>
+  <label for="nama">Nama Panggilan</label>
   <input type="text" id="nama" placeholder="Masukkan nama...">
 
   <label for="acara">Pilih Ibadah</label>
   <select id="acara" onchange="checkPilihanIbadah()">
-    <option value="" disabled selected>-- Pilih Jenis Ibadah --</option>
+    <option value="" disabled selected>-- Pilihan Ibadah --</option>
     <option value="Ibadah Raya">Ibadah Raya</option>
     <option value="Komsel">Komsel</option>
     <option value="Zoom Rumah Doa">Zoom Rumah Doa</option>
@@ -55,6 +55,7 @@
     <option value="Youth">Youth</option>
     <option value="Profetik">Profetik</option>
     <option value="Lansia">Lansia</option>
+    <option value="Lansia">Tengah Minggu</option>
   </select>
 
   <div class="camera-box">
