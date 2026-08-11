@@ -485,139 +485,58 @@ let fotoBase64 = null;
 
 
 // ==================================================
-// AKTIFKAN KAMERA
+// AKTIFKAN KAMERA (VERSI FIX PERMISSIONS & RESOLUSI)
 // ==================================================
 
 async function aktifkanKamera() {
+  const statusElement = document.getElementById('status');
 
-
-  // Pastikan browser mendukung kamera
-
-  if (
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ) {
-
-    tampilkanStatus(
-
-      'Browser tidak mendukung akses kamera.',
-
-      'error'
-
-    );
-
+  // 1. Cek Dukungan Browser & HTTPS
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    tampilkanStatus('Akses kamera diblokir atau browser tidak mendukung (Pastikan menggunakan HTTPS).', 'error');
     return;
-
   }
-
 
   try {
+    tampilkanStatus('Meminta izin akses kamera...', 'loading');
 
+    // 2. Minta Stream Kamera (Gunakan konfigurasi sederhana agar tidak error di HP)
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user', // Menggunakan kamera depan
+        width: { max: 1280 },
+        height: { max: 720 }
+      },
+      audio: false
+    });
 
-    stream =
-      await navigator
-        .mediaDevices
-        .getUserMedia({
+    const video = document.getElementById('video');
+    video.srcObject = stream;
 
-          video: {
+    // Tunggu sampai video siap diputar
+    video.onloadedmetadata = () => {
+      video.play();
+      document.getElementById('btnFoto').disabled = false;
+      tampilkanStatus('Kamera aktif. Posisikan wajah di dalam frame.', 'success');
+    };
 
-            facingMode: {
-              ideal: 'user'
-            },
+  } catch (error) {
+    console.error('Detail Error Kamera:', error);
 
-            width: {
-              ideal: 1280
-            },
+    let pesan = 'Tidak dapat mengakses kamera.';
 
-            height: {
-              ideal: 720
-            }
+    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+      pesan = '🚫 Izin kamera ditolak. Silakan klik ikon gembok di URL browser lalu izinkan Kamera, kemudian refresh halaman.';
+    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+      pesan = '📷 Perangkat kamera tidak ditemukan di HP/Komputer Anda.';
+    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+      pesan = '⚠️ Kamera sedang digunakan oleh aplikasi lain (seperti WhatsApp/Zoom). Tutup aplikasi tersebut terlebih dahulu.';
+    } else if (error.name === 'OverconstrainedError') {
+      pesan = '⚙️ Kamera tidak mendukung resolusi yang diminta.';
+    }
 
-          },
-
-          audio: false
-
-        });
-
-
-    const video =
-      document.getElementById(
-        'video'
-      );
-
-
-    video.srcObject =
-      stream;
-
-
-    document.getElementById(
-      'btnFoto'
-    ).disabled = false;
-
-
-    tampilkanStatus(
-
-      'Kamera aktif. Posisikan wajah di kamera.',
-
-      'success'
-
-    );
-
-
+    tampilkanStatus(pesan, 'error');
   }
-
-  catch (error) {
-
-
-    console.error(
-      error
-    );
-
-
-    let pesan =
-      'Tidak dapat mengakses kamera.';
-
-
-    if (
-      error.name ===
-      'NotAllowedError'
-    ) {
-
-      pesan =
-        'Izin kamera ditolak. Silakan izinkan kamera pada browser.';
-
-    }
-
-
-    if (
-      error.name ===
-      'NotFoundError'
-    ) {
-
-      pesan =
-        'Kamera tidak ditemukan.';
-
-    }
-
-
-    if (
-      error.name ===
-      'NotReadableError'
-    ) {
-
-      pesan =
-        'Kamera sedang digunakan aplikasi lain.';
-
-    }
-
-
-    tampilkanStatus(
-      pesan,
-      'error'
-    );
-
-  }
-
 }
 
 
