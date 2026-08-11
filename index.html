@@ -43,7 +43,6 @@
   <label for="nama">Nama Lengkap</label>
   <input type="text" id="nama" placeholder="Masukkan nama...">
 
-  <!-- Dropdown Ibadah -->
   <label for="acara">Pilih Ibadah</label>
   <select id="acara" onchange="checkPilihanIbadah()">
     <option value="" disabled selected>-- Pilih Jenis Ibadah --</option>
@@ -58,46 +57,40 @@
     <option value="Lansia">Lansia</option>
   </select>
 
-  <!-- Area Kamera & Preview -->
   <div class="camera-box">
     <video id="video" autoplay playsinline muted></video>
     <img id="preview" alt="Preview Foto">
   </div>
   <canvas id="canvas" style="display:none;"></canvas>
 
-  <!-- Input File Tersembunyi -->
   <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
 
-  <!-- Tombol Aksi -->
-  <button type="button" class="btn-cam" id="btnCam" onclick="startCamera()">📷 Buka Kamera Selfie</button>
-  <button type="button" class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">📁 Upload Screenshot Zoom</button>
-  <button type="button" class="btn-snap" id="btnSnap" onclick="takePhoto()" disabled>📸 Ambil Foto</button>
-  <button type="button" class="btn-send" id="btnSend" onclick="sendData()" disabled>✅ Kirim Absensi</button>
+  <button type="button" class="btn-cam" id="btnCam" onclick="startCamera()">Buka Kamera Selfie</button>
+  <button type="button" class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">Upload Screenshot Zoom</button>
+  <button type="button" class="btn-snap" id="btnSnap" onclick="takePhoto()" disabled>Ambil Foto</button>
+  <button type="button" class="btn-send" id="btnSend" onclick="sendData()" disabled>Kirim Absensi</button>
 
   <div id="status"></div>
 </div>
 
 <script>
-  // MASUKKAN URL WEB APP APPS SCRIPT ANDA DI SINI
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwB8cc8IdC8JUbFXoRIlIl_U73z-TxJ96ZkhPAsl8K-8zLUlY62uJIhzxZzEHH6nnT4/exec";
 
   let stream = null;
   let fotoBase64 = null;
 
-  // 0. DETEKSI PILIHAN IBADAH
   function checkPilihanIbadah() {
     const acara = document.getElementById('acara').value;
     const btnUpload = document.getElementById('btnUpload');
 
     if (acara === 'Zoom Rumah Doa') {
-      btnUpload.style.display = 'block'; // Tampilkan tombol upload
+      btnUpload.style.display = 'block'; 
       showStatus("Khusus Zoom Rumah Doa, Anda bisa Upload Screenshot atau gunakan Kamera.", "info");
     } else {
-      btnUpload.style.display = 'none';  // Sembunyikan jika ibadah lain
+      btnUpload.style.display = 'none';  
     }
   }
 
-  // 1. MENGAKTIFKAN KAMERA
   async function startCamera() {
     showStatus("Meminta izin akses kamera...", "info");
     try {
@@ -118,7 +111,6 @@
     }
   }
 
-  // 2. MENGAMBIL FOTO KAMERA
   function takePhoto() {
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
@@ -142,7 +134,6 @@
     showStatus("Foto selfie berhasil diambil.", "info");
   }
 
-  // 3. MEMPROSES FILE UPLOAD (SCREENSHOT)
   function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -154,9 +145,8 @@
 
     const reader = new FileReader();
     reader.onload = function(e) {
-      fotoBase64 = e.target.result; // Mengubah file gambar ke Base64
+      fotoBase64 = e.target.result; 
 
-      // Tampilkan hasil ke preview
       const preview = document.getElementById('preview');
       const video = document.getElementById('video');
       
@@ -164,7 +154,6 @@
       preview.style.display = 'block';
       video.style.display = 'none';
 
-      // Matikan kamera jika sedang terbuka
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
@@ -173,10 +162,9 @@
       showStatus("Screenshot berhasil diunggah! Klik Kirim jika sudah sesuai.", "info");
     };
 
-    reader.readAsDataURL(file); // Membaca file sebagai DataURL Base64
+    reader.readAsDataURL(file); 
   }
 
-  // 4. MENGIRIM DATA KE GOOGLE APPS SCRIPT
   async function sendData() {
     const nama = document.getElementById('nama').value.trim();
     const acara = document.getElementById('acara').value;
@@ -214,7 +202,7 @@
         body: formData.toString()
       });
 
-      showStatus("✅ Absensi Berhasil Terkirim!", "success");
+      showStatus("Absensi Berhasil Terkirim!", "success");
       btnSend.innerText = "Selesai";
 
       if (stream) {
@@ -224,7 +212,7 @@
     } catch (err) {
       showStatus("Gagal mengirim data. Coba lagi.", "error");
       btnSend.disabled = false;
-      btnSend.innerText = "✅ Kirim Absensi";
+      btnSend.innerText = "Kirim Absensi";
     }
   }
 
