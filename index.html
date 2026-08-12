@@ -129,9 +129,13 @@
       video.srcObject = stream;
       document.getElementById('preview').style.display = 'none';
       video.style.display = 'block';
-      document.getElementById('btnSnap').disabled = false;
+
+      video.onloadedmetadata = () => {
+        video.play();
+        document.getElementById('btnSnap').disabled = false;
+        showStatus("Kamera aktif. Silakan foto selfie.", "info");
+      };
       
-      showStatus("Kamera aktif. Silakan foto selfie.", "info");
     } catch (err) {
       showStatus("Gagal membuka kamera. Pastikan izin kamera sudah diberikan.", "error");
     }
@@ -156,6 +160,7 @@
     preview.style.display = 'block';
     video.style.display = 'none';
 
+    document.getElementById('btnSnap').disabled = true;
     document.getElementById('btnSend').disabled = false;
     showStatus("Foto selfie berhasil diambil.", "info");
   }
@@ -184,6 +189,7 @@
         stream.getTracks().forEach(track => track.stop());
       }
 
+      document.getElementById('btnSnap').disabled = true;
       document.getElementById('btnSend').disabled = false;
       showStatus("Screenshot berhasil diunggah! Klik Kirim jika sudah sesuai.", "info");
     };
@@ -230,6 +236,7 @@
 
       showStatus("Absensi Berhasil Terkirim!", "success");
       btnSend.innerText = "Selesai";
+      btnSend.disabled = true;
 
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
