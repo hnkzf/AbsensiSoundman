@@ -37,37 +37,33 @@
 </head>
 <body>
 
-<div class="card">
-  <h2>Absensi Ibadah</h2>
-  <div class="day-badge" id="infoHari">📅 Memuat jadwal hari ini...</div>
-
-  <label for="nama">Nama Lengkap</label>
-  <input type="text" id="nama" placeholder="Masukkan nama...">
-
-  <!-- Dropdown Ibadah (Isinya di-generate otomatis oleh JavaScript) -->
-  <label for="acara">Pilih Ibadah</label>
-  <select id="acara" onchange="checkPilihanIbadah()">
-    <option value="" disabled selected>-- Memuat Pilihan Ibadah --</option>
-  </select>
-
-  <!-- Area Kamera & Preview -->
-  <div class="camera-box">
-    <video id="video" autoplay playsinline muted></video>
-    <img id="preview" alt="Preview Foto">
+  <div class="card">
+    <h2>Absensi Ibadah</h2>
+    <div class="day-badge" id="infoHari"> Memuat jadwal hari ini...</div>
+  
+    <label for="nama">Nama Lengkap</label>
+    <input type="text" id="nama" placeholder="Masukkan nama...">
+  
+    <label for="acara">Pilih Ibadah</label>
+    <select id="acara" onchange="checkPilihanIbadah()">
+      <option value="" disabled selected>-- Memuat Pilihan Ibadah --</option>
+    </select>
+  
+    <div class="camera-box">
+      <video id="video" autoplay playsinline muted></video>
+      <img id="preview" alt="Preview Foto">
+    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
+  
+    <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
+  
+    <button type="button" class="btn-cam" id="btnCam" onclick="startCamera()">Buka Kamera</button>
+    <button type="button" class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">Upload Screenshot Zoom</button>
+    <button type="button" class="btn-snap" id="btnSnap" onclick="takePhoto()" disabled>Ambil Foto</button>
+    <button type="button" class="btn-send" id="btnSend" onclick="sendData()" disabled>Kirim Absensi</button>
+  
+    <div id="status"></div>
   </div>
-  <canvas id="canvas" style="display:none;"></canvas>
-
-  <!-- Input File Upload -->
-  <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
-
-  <!-- Tombol Aksi -->
-  <button type="button" class="btn-cam" id="btnCam" onclick="startCamera()">📷 Buka Kamera Selfie</button>
-  <button type="button" class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">📁 Upload Screenshot Zoom</button>
-  <button type="button" class="btn-snap" id="btnSnap" onclick="takePhoto()" disabled>📸 Ambil Foto</button>
-  <button type="button" class="btn-send" id="btnSend" onclick="sendData()" disabled>✅ Kirim Absensi</button>
-
-  <div id="status"></div>
-</div>
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYzOqXHJ_bCKVSuD5zOJYAqbI647S_JueyZbp8WhKnM0SbOJS2cMGljovMTD1bzovnaA/exec";
@@ -87,24 +83,20 @@
 
   const NAMA_HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
-  // OTOMATIS JALAN SAAT HALAMAN DIBUKA
   window.onload = function() {
     setJadwalDropdown();
   };
 
-  // FILTER DROPDOWN HANYA TAMPILKAN IBADAH HARI INI
   function setJadwalDropdown() {
-    const hariIni = new Date().getDay(); // Mendapatkan index hari (0-6)
+    const hariIni = new Date().getDay(); 
     const namaHariIni = NAMA_HARI[hariIni];
     const ibadahHariIni = JADWAL_HARIAN[hariIni] || [];
 
-    // Tampilkan label hari di atas form
-    document.getElementById('infoHari').innerText = `📅 Hari ini: ${namaHariIni}`;
+    document.getElementById('infoHari').innerText = `Hari ${namaHariIni}`;
 
     const selectAcara = document.getElementById('acara');
-    selectAcara.innerHTML = '<option value="" disabled selected>-- Pilih Jenis Ibadah Hari Ini --</option>';
+    selectAcara.innerHTML = '<option value="" disabled selected>-- Ibadah Hari Ini --</option>';
 
-    // Masukkan hanya ibadah yang sesuai hari ke dropdown
     ibadahHariIni.forEach(function(ibadah) {
       const option = document.createElement('option');
       option.value = ibadah;
@@ -113,7 +105,6 @@
     });
   }
 
-  // DETEKSI PILIHAN IBADAH
   function checkPilihanIbadah() {
     const acara = document.getElementById('acara').value;
     const btnUpload = document.getElementById('btnUpload');
