@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Absensi Ibadah</title>
+  <style>
+    * { box-sizing: border-box; font-family: sans-serif; }
+    body { background: #f4f6f9; padding: 20px; margin: 0; display: flex; justify-content: center; }
+    .card { background: #fff; width: 100%; max-width: 400px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2 { text-align: center; margin-top: 0; color: #333; }
+    label { font-weight: bold; font-size: 14px; display: block; margin-top: 12px; margin-bottom: 5px; }
+    
+    input, select { 
+      width: 100%; 
+      padding: 10px; 
+      border: 1px solid #ccc; 
+      border-radius: 6px; 
+      font-size: 14px; 
+      background-color: #fff;
+    }
+    
+    .camera-box { position: relative; width: 100%; height: 260px; background: #000; border-radius: 8px; margin-top: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    video, img#preview { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    img#preview { display: none; transform: none; }
+    button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+    .btn-cam { background: #3b82f6; color: white; }
+    .btn-upload { background: #8b5cf6; color: white; display: none; } /* Tombol Upload (Awalnya tersembunyi) */
+    .btn-snap { background: #10b981; color: white; }
+    .btn-send { background: #059669; color: white; margin-top: 15px; }
+    .btn-send:disabled { background: #ccc; cursor: not-allowed; }
+    #status { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-size: 13px; display: none; }
+    .info { background: #e0f2fe; color: #0369a1; }
+    .success { background: #d1fae5; color: #047857; }
+    .error { background: #fee2e2; color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Absensi Ibadah</h2>
+
+  <label for="nama">Nama Panggilan</label>
+  <input type="text" id="nama" placeholder="Masukkan nama...">
+
+  <label for="acara">Pilih Ibadah</label>
+  <select id="acara" onchange="checkPilihanIbadah()">
+    <option value="" disabled selected>-- Pilihan Ibadah --</option>
+    <option value="Ibadah Raya">Ibadah Raya</option>
+    <option value="Komsel">Komsel</option>
+    <option value="Zoom Rumah Doa">Zoom Rumah Doa</option>
+    <option value="Menara Doa">Menara Doa</option>
+    <option value="WBI">WBI</option>
+    <option value="SBT">SBT</option>
+    <option value="Youth">Youth</option>
+    <option value="Profetik">Profetik</option>
+    <option value="Lansia">Lansia</option>
+    <option value="Tengah Minggu">Tengah Minggu</option>
+  </select>
+
+  <div class="camera-box">
+    <video id="video" autoplay playsinline muted></video>
+    <img id="preview" alt="Preview Foto">
+  </div>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
+
+  <button type="button" class="btn-cam" id="btnCam" onclick="startCamera()">Buka Kamera Selfie</button>
+  <button type="button" class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">Upload Screenshot Zoom</button>
+  <button type="button" class="btn-snap" id="btnSnap" onclick="takePhoto()" disabled>Ambil Foto</button>
+  <button type="button" class="btn-send" id="btnSend" onclick="sendData()" disabled>Kirim Absensi</button>
+
+  <div id="status"></div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYzOqXHJ_bCKVSuD5zOJYAqbI647S_JueyZbp8WhKnM0SbOJS2cMGljovMTD1bzovnaA/exec";
+
+  let stream = null;
+  let fotoBase64 = null;
+
+  function checkPilihanIbadah() {
+    const acara = document.getElementById('acara').value;
+    const btnUpload = document.getElementById('btnUpload');
+
+    if (acara === 'Zoom Rumah Doa') {
+      btnUpload.style.display = 'block'; 
+      showStatus("Khusus Zoom Rumah Doa, Anda bisa Upload Screenshot atau gunakan Kamera.", "info");
+    } else {
+      btnUpload.style.display = 'none';  
+    }
+  }
+
+  async function startCamera() {
+    showStatus("Meminta izin akses kamera...", "info");
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false 
+      });
+      
+      const video = document.getElementById('video');
+      video.srcObject = stream;
+      document.getElementById('preview').style.display = 'none';
+      video.style.display = 'block';
+      document.getElementById('btnSnap').disabled = false;
+      
+      showStatus("Kamera aktif. Silakan foto selfie.", "info");
+    } catch (err) {
+      showStatus("Gagal membuka kamera. Pastikan izin kamera sudah diberikan.", "error");
+    }
+  }
+
+  function takePhoto() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    const ctx = canvas.getContext('2d');
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    fotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+    
+    preview.src = fotoBase64;
+    preview.style.display = 'block';
+    video.style.display = 'none';
+
+    document.getElementById('btnSend').disabled = false;
+    showStatus("Foto selfie berhasil diambil.", "info");
+  }
+
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showStatus("File yang diunggah harus berupa gambar!", "error");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      fotoBase64 = e.target.result; 
+
+      const preview = document.getElementById('preview');
+      const video = document.getElementById('video');
+      
+      preview.src = fotoBase64;
+      preview.style.display = 'block';
+      video.style.display = 'none';
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
+      document.getElementById('btnSend').disabled = false;
+      showStatus("Screenshot berhasil diunggah! Klik Kirim jika sudah sesuai.", "info");
+    };
+
+    reader.readAsDataURL(file); 
+  }
+
+  async function sendData() {
+    const nama = document.getElementById('nama').value.trim();
+    const acara = document.getElementById('acara').value;
+
+    if (!nama) {
+      showStatus("Silakan isi nama Anda!", "error");
+      return;
+    }
+
+    if (!acara) {
+      showStatus("Silakan pilih jenis ibadah!", "error");
+      return;
+    }
+
+    if (!fotoBase64) {
+      showStatus("Ambil foto atau upload screenshot terlebih dahulu!", "error");
+      return;
+    }
+
+    const btnSend = document.getElementById('btnSend');
+    btnSend.disabled = true;
+    btnSend.innerText = "Mengirim...";
+    showStatus("Sedang mengunggah data...", "info");
+
+    const formData = new URLSearchParams();
+    formData.append("nama", nama);
+    formData.append("acara", acara);
+    formData.append("foto", fotoBase64);
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString()
+      });
+
+      showStatus("Absensi Berhasil Terkirim!", "success");
+      btnSend.innerText = "Selesai";
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
+    } catch (err) {
+      showStatus("Gagal mengirim data. Coba lagi.", "error");
+      btnSend.disabled = false;
+      btnSend.innerText = "Kirim Absensi";
+    }
+  }
+
+  function showStatus(text, type) {
+    const el = document.getElementById('status');
+    el.innerText = text;
+    el.className = type;
+    el.style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
