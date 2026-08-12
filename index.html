@@ -39,37 +39,32 @@
 
 <div class="card">
   <h2>Absensi Ibadah</h2>
+  <div class="day-badge" id="infoHari">📅 Memuat jadwal hari ini...</div>
 
-  <label for="nama">Nama Panggilan</label>
+  <label for="nama">Nama Lengkap</label>
   <input type="text" id="nama" placeholder="Masukkan nama...">
 
+  <!-- Dropdown Ibadah (Isinya di-generate otomatis oleh JavaScript) -->
   <label for="acara">Pilih Ibadah</label>
   <select id="acara" onchange="checkPilihanIbadah()">
-    <option value="" disabled selected>-- Pilihan Ibadah --</option>
-    <option value="Ibadah Raya">Ibadah Raya</option>
-    <option value="Komsel">Komsel</option>
-    <option value="Zoom Rumah Doa">Zoom Rumah Doa</option>
-    <option value="Menara Doa">Menara Doa</option>
-    <option value="WBI">WBI</option>
-    <option value="SBT">SBT</option>
-    <option value="Youth">Youth</option>
-    <option value="Profetik">Profetik</option>
-    <option value="Lansia">Lansia</option>
-    <option value="Tengah Minggu">Tengah Minggu</option>
+    <option value="" disabled selected>-- Memuat Pilihan Ibadah --</option>
   </select>
 
+  <!-- Area Kamera & Preview -->
   <div class="camera-box">
     <video id="video" autoplay playsinline muted></video>
     <img id="preview" alt="Preview Foto">
   </div>
   <canvas id="canvas" style="display:none;"></canvas>
 
+  <!-- Input File Upload -->
   <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
 
-  <button type="button" class="btn-cam" id="btnCam" onclick="startCamera()">Buka Kamera Selfie</button>
-  <button type="button" class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">Upload Screenshot Zoom</button>
-  <button type="button" class="btn-snap" id="btnSnap" onclick="takePhoto()" disabled>Ambil Foto</button>
-  <button type="button" class="btn-send" id="btnSend" onclick="sendData()" disabled>Kirim Absensi</button>
+  <!-- Tombol Aksi -->
+  <button type="button" class="btn-cam" id="btnCam" onclick="startCamera()">📷 Buka Kamera Selfie</button>
+  <button type="button" class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">📁 Upload Screenshot Zoom</button>
+  <button type="button" class="btn-snap" id="btnSnap" onclick="takePhoto()" disabled>📸 Ambil Foto</button>
+  <button type="button" class="btn-send" id="btnSend" onclick="sendData()" disabled>✅ Kirim Absensi</button>
 
   <div id="status"></div>
 </div>
@@ -80,15 +75,54 @@
   let stream = null;
   let fotoBase64 = null;
 
+  const JADWAL_HARIAN = {
+    0: ["Ibadah Raya", "Teens", "Komsel"],
+    1: ["Komsel", "Zoom Rumah Doa"],
+    2: ["Komsel"],
+    3: ["Komsel", "Menara Doa", "WBI"],
+    4: ["Komsel"],
+    5: ["Komsel", "SBT", "Tengah Minggu"],
+    6: ["Komsel", "Youth", "Profetik", "Lansia"]
+  };
+
+  const NAMA_HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+  // OTOMATIS JALAN SAAT HALAMAN DIBUKA
+  window.onload = function() {
+    setJadwalDropdown();
+  };
+
+  // FILTER DROPDOWN HANYA TAMPILKAN IBADAH HARI INI
+  function setJadwalDropdown() {
+    const hariIni = new Date().getDay(); // Mendapatkan index hari (0-6)
+    const namaHariIni = NAMA_HARI[hariIni];
+    const ibadahHariIni = JADWAL_HARIAN[hariIni] || [];
+
+    // Tampilkan label hari di atas form
+    document.getElementById('infoHari').innerText = `📅 Hari ini: ${namaHariIni}`;
+
+    const selectAcara = document.getElementById('acara');
+    selectAcara.innerHTML = '<option value="" disabled selected>-- Pilih Jenis Ibadah Hari Ini --</option>';
+
+    // Masukkan hanya ibadah yang sesuai hari ke dropdown
+    ibadahHariIni.forEach(function(ibadah) {
+      const option = document.createElement('option');
+      option.value = ibadah;
+      option.textContent = ibadah;
+      selectAcara.appendChild(option);
+    });
+  }
+
+  // DETEKSI PILIHAN IBADAH
   function checkPilihanIbadah() {
     const acara = document.getElementById('acara').value;
     const btnUpload = document.getElementById('btnUpload');
 
     if (acara === 'Zoom Rumah Doa') {
-      btnUpload.style.display = 'block'; 
+      btnUpload.style.display = 'block';
       showStatus("Khusus Zoom Rumah Doa, Anda bisa Upload Screenshot atau gunakan Kamera.", "info");
     } else {
-      btnUpload.style.display = 'none';  
+      btnUpload.style.display = 'none';
     }
   }
 
